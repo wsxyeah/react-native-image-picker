@@ -1,17 +1,17 @@
-#### _Before you open an issue_
-This library started as a basic bridge of the native iOS image picker, and I want to keep it that way. As such, functionality beyond what the native `UIImagePickerController` supports will not be supported here. **Multiple image selection, more control over the crop tool, and landscape support** are things missing from the native iOS functionality - **not issues with my library**. If you need these things, [react-native-image-crop-picker](https://github.com/ivpusic/react-native-image-crop-picker) might be a better choice for you.    
 
-# react-native-image-picker
+# React Native Image Picker [![npm version](https://badge.fury.io/js/react-native-image-picker.svg)](https://badge.fury.io/js/react-native-image-picker) [![npm](https://img.shields.io/npm/dt/react-native-image-picker.svg)](https://www.npmjs.org/package/react-native-image-picker) ![MIT](https://img.shields.io/dub/l/vibe-d.svg) ![Platform - Android and iOS](https://img.shields.io/badge/platform-Android%20%7C%20iOS-yellow.svg)
+
 A React Native module that allows you to use native UI to select a photo/video from the device library or directly from the camera, like so:
 
 iOS | Android
 ------- | ----
 <img title="iOS" src="https://github.com/marcshilling/react-native-image-picker/blob/master/images/ios-image.png"> | <img title="Android" src="https://github.com/marcshilling/react-native-image-picker/blob/master/images/android-image.png">
 
+#### _Before you open an issue_
+This library started as a basic bridge of the native iOS image picker, and I want to keep it that way. As such, functionality beyond what the native `UIImagePickerController` supports will not be supported here. **Multiple image selection, more control over the crop tool, and landscape support** are things missing from the native iOS functionality - **not issues with my library**. If you need these things, [react-native-image-crop-picker](https://github.com/ivpusic/react-native-image-crop-picker) might be a better choice for you.    
+
 ## Table of contents
 - [Install](#install)
-  - [iOS](#ios)
-  - [Android](#android)
 - [Usage](#usage)
 - [Direct launch](#directly-launching-the-camera-or-image-library)
 - [Options](#options)
@@ -21,65 +21,62 @@ iOS | Android
 
 `npm install react-native-image-picker@latest --save`
 
-Use [rnpm](https://github.com/rnpm/rnpm) to automatically complete the installation, or link manually like so:
+### Automatic Installation
 
-### iOS
+**React Native >= 0.29**
+`$react-native link`
+
+**React Native < 0.29**
+`$rnpm link`
+
+IMPORTANT NOTE: You'll still need to perform step 4 for iOS and step 3 for Android of the manual instructions below.
+
+### Manual Installation
+
+#### iOS
 
 1. In the XCode's "Project navigator", right click on your project's Libraries folder ➜ `Add Files to <...>`
 2. Go to `node_modules` ➜ `react-native-image-picker` ➜ `ios` ➜ select `RNImagePicker.xcodeproj`
 3. Add `RNImagePicker.a` to `Build Phases -> Link Binary With Libraries`
-4. Compile and have fun
+4. For iOS 10+, Add the `NSPhotoLibraryUsageDescription` and `NSCameraUsageDescription` keys to your `Info.plist` with strings describing why your app needs these permissions
+5. Compile and have fun
 
-### Android
-```gradle
-// file: android/settings.gradle
-...
+#### Android
+1. Add the following lines to `android/settings.gradle`:
 
-include ':react-native-image-picker'
-project(':react-native-image-picker').projectDir = new File(settingsDir, '../node_modules/react-native-image-picker/android')
-```
-```gradle
-// file: android/app/build.gradle
-...
+    ```gradle
+    include ':react-native-image-picker'
+    project(':react-native-image-picker').projectDir = new File(settingsDir, '../node_modules/react-native-image-picker/android')
+    ```
+2. Add the compile line to the dependencies in `android/app/build.gradle`:
 
-dependencies {
-    ...
-    compile project(':react-native-image-picker')
-}
-```
-```xml
-<!-- file: android/app/src/main/AndroidManifest.xml -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.myApp">
+    ```gradle
+    dependencies {
+        compile project(':react-native-image-picker')
+    }
+    ```
+3. Add the required permissions in `AndroidManifest.xml`:
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- add following permissions -->
+    ```xml
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
-    <!-- -->
-    ...
-```
-```java
-// file: android/app/src/main/java/com/<...>/MainApplication.java
-...
+    ```
+4. Add the import and link the package in `MainApplication.java`:
 
-import com.imagepicker.ImagePickerPackage; // <-- add this import
-
-public class MainApplication extends Application implements ReactApplication {
-    @Override
-    protected List<ReactPackage> getPackages() {
-        return Arrays.<ReactPackage>asList(
-            new MainReactPackage(),
-            new ImagePickerPackage() // <-- add this line
-        );
+    ```java
+    import com.imagepicker.ImagePickerPackage; // <-- add this import
+    
+    public class MainApplication extends Application implements ReactApplication {
+        @Override
+        protected List<ReactPackage> getPackages() {
+            return Arrays.<ReactPackage>asList(
+                new MainReactPackage(),
+                new ImagePickerPackage() // <-- add this line
+            );
+        }
     }
-...
-}
-
 ```
+
 ## Usage
 
 ```javascript
@@ -161,7 +158,7 @@ On iOS, don't assume that the absolute uri returned will persist. See [#107](/..
 option | iOS  | Android | Info
 ------ | ---- | ------- | ----
 title | OK | OK | Specify `null` or empty string to remove the title
-cancelButtonTitle | OK | OK |
+cancelButtonTitle | OK | OK | Specify `null` or empty string to remove this button (Android only)
 takePhotoButtonTitle | OK | OK | Specify `null` or empty string to remove this button
 chooseFromLibraryButtonTitle | OK | OK | Specify `null` or empty string to remove this button
 customButtons | OK | OK | An array containing objects with the name and title of buttons
@@ -178,7 +175,8 @@ noData | OK | OK | If true, disables the base64 `data` field from being generate
 storageOptions | OK | OK | If this key is provided, the image will get saved in the Documents directory on iOS, and the Pictures directory on Android (rather than a temporary directory)
 storageOptions.skipBackup | OK | - | If true, the photo will NOT be backed up to iCloud
 storageOptions.path | OK | - | If set, will save image at /Documents/[path] rather than the root
-storageOptions.cameraRoll | OK | - | If true, the cropped photo will be saved to the iOS Camera roll.
+storageOptions.cameraRoll | OK | - | If true, the cropped photo will be saved to the iOS Camera Roll.
+storageOptions.waitUntilSaved | OK | - | If true, will delay the response callback until after the photo/video was saved to the Camera Roll. If the photo or video was just taken, then the file name and timestamp fields are only provided in the response object when this is true.
 
 ### The Response Object
 
@@ -194,8 +192,9 @@ width | OK | OK | Image dimensions
 height | OK | OK | Image dimensions
 fileSize | OK | OK | The file size (photos only)
 type | - | OK | The file type (photos only)
-fileName | - | OK | The file name (photos only)
+fileName | OK (photos and videos) | OK (photos) | The file name
 path | - | OK | The file path
-latitude | - | OK | Latitude metadata, if available
-longitude | - | OK | Longitude metadata, if available
-timestamp | - | OK | Timestamp metadata, if available, in ISO8601 UTC format
+latitude | OK | OK | Latitude metadata, if available
+longitude | OK | OK | Longitude metadata, if available
+timestamp | OK | OK | Timestamp metadata, if available, in ISO8601 UTC format
+originalRotation | - | OK | Rotation degrees (photos only) *See [#109](/../../issues/199)*
